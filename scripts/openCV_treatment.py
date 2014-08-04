@@ -1,22 +1,23 @@
 import cv2
 import numpy as np
-from geometrical_perspective_recovery import gpr
 from treatment_error import TreatmentError
 
 def toBinary(im):
 	img=im.copy()
 	img[img!=0]=255
 	return img
-
 	
 def extraction(im):
 	x, y =im.shape
 	box=[x, y, 0, 0]
 	f_shape=False
 	ligne_cpt=0
-	for i in xrange(0,x):
-		for j in xrange (0,y):
-			if im.item(i,j):
+	i=0
+	j=0
+	for l in im:
+		for pix in l:
+			if pix:
+
 
 				if i < box[0]:
 					box[0]=i
@@ -29,7 +30,8 @@ def extraction(im):
 
 				f_shape=True
 				ligne_cpt=0
-			
+				
+
 			if f_shape:
 				ligne_cpt=ligne_cpt+1
 			if ligne_cpt > 2*y:
@@ -41,6 +43,9 @@ def extraction(im):
 					ligne_cpt=0
 				else:
 					break
+			j+=1
+		i+=1
+		j=0
 				
 	edge=3
 	return [box[0]-edge, box[1]-edge, box[2]+edge, box[3]+edge], box

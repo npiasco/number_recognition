@@ -7,13 +7,15 @@ import smach
 import smach_ros
 
 import cv2
-from geometrical_perspective_recovery import gpr
+#from geometrical_perspective_recovery import gpr
+import geometrical_perspective_recovery as GPR
 import openCV_treatment as treat_tool
 from image_compare import ImageComparator
 from treatment_error import TreatmentError
 import recognition_state_machine as RSM
 
 
+"""
 class GPR_treatment(smach.State):
 	def __init__(self):
 		smach.State.__init__(self, 
@@ -34,7 +36,7 @@ class GPR_treatment(smach.State):
 		else:
 			return 'succeed'
 		
-
+"""
 def recognizeNumber(im):
 
 	# Create a SMACH state machine
@@ -74,21 +76,39 @@ def recognizeNumber(im):
 												'im_output':'im'})
 		
 		smach.StateMachine.add('Recognition_Process', sm_recognition, 		
-								transitions={'fail':'GPR',
+								transitions={'fail':'GPR_Treatment',
 											'fail_after_gpr':'aborted', 
 											'succeed':'succeed'},
 								remapping={'im_input_machine':'first_im'})
-								
-		smach.StateMachine.add('GPR', GPR_treatment(), 		
-								transitions={'fail':'aborted', 
-											'succeed':'Recognition_Process'},
-								remapping={'im_input':'first_im', 
-											'im_output':'first_im'})
+			
+		# Create GPR state machine
+		sm_gpr = smach.StateMachine(outcomes=['succeed', 'fail'],
+											input_keys=['im_input'],
+											output_keys=['im_output'])
+		with sm_gpr:			
+			smach.StateMachine.add('Color_Extraction', GPR.Color_Extraction(), 		
+									transitions={'fail':'fail', 
+												'extracted':'GPR'},
+									remapping={'im_input':'im_input', 
+												'im_output':'im'})
+	
+			smach.StateMachine.add('GPR', GPR.GPR(), 		
+									transitions={'fail':'Color_Extraction', 
+												'succeed':'succeed'},
+									remapping={'im_input':'im_input', 
+												'im_extracted':'im',
+												'im_output':'im_output'})
+												
+		smach.StateMachine.add('GPR_Treatment', sm_gpr, 		
+						transitions={'fail':'aborted',
+									'succeed':'Recognition_Process'},
+						remapping={'im_input':'first_im',
+									'im_output':'first_im'})	
 
 
 	# Create and start the introspection server to visualize the state machine
-	sis = smach_ros.IntrospectionServer('rnumber', sm, '/SM_ROOT')
-	sis.start()
+#	sis = smach_ros.IntrospectionServer('rnumber', sm, '/SM_ROOT')
+#	sis.start()
 
 	# Execute the state machine
 	outcome = sm.execute()

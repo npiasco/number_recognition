@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 import os
+import sys
 import glob
 from openCV_treatment import toBinary
 from treatment_error import TreatmentError
@@ -12,8 +13,9 @@ class ImageComparator:
 		self.li_1=list()
 		self.li_2=list()
 		#path to the directory of the num's directories
-		path='number_example/'
-		dirs=glob.glob(path+'*')
+		pathname = os.path.dirname(sys.argv[0])
+		fullpath = os.path.abspath(pathname)
+		dirs=glob.glob(fullpath+'/number_example/'+'*')
 		for folder in dirs:
 
 			im=cv2.imread(folder+'/-1.jpg',0)

@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 from number_recognition.srv import *
 import rospy
+import sys
 from treatment_error import TreatmentError
 from recognizeNumber import recognizeNumber
 from cv_bridge import CvBridge, CvBridgeError
@@ -20,14 +21,14 @@ def handle_read_floor_number(req):
 			floor=recognizeNumber(cv_image)
 			return ReadFloorNumberResponse(floor)
 		except TreatmentError, e:
-			print "Enable to read floor number : %s"%e
+			rospy.loginfo("Enable to read floor number : %s"%e)
 			raise rospy.ServiceException("Recognition Failed")
 
 	except CvBridgeError, e:
-		print e
+		rospy.loginfo(e)
 		raise rospy.ServiceException("Recognition Failed")
-		
-    
+
+
 
 
 def read_floor_number_server():
@@ -37,4 +38,7 @@ def read_floor_number_server():
 	rospy.spin()
 
 if __name__ == "__main__":
-    read_floor_number_server()
+	read_floor_number_server()
+    
+    
+    

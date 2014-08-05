@@ -48,6 +48,7 @@ def recognizeNumber(im):
 		# Create recognition state machine
 		sm_recognition = smach.StateMachine(outcomes=['succeed', 'fail', 'fail_after_gpr'],
 											input_keys=['im_input_machine'])
+	
 		with sm_recognition:
 			sm_recognition.userdata.im=None
 			sm_recognition.userdata.floor_number=None

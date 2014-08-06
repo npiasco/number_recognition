@@ -49,9 +49,11 @@ def recognizeNumber(im):
 		sm_recognition = smach.StateMachine(outcomes=['succeed', 'fail', 'fail_after_gpr'],
 											input_keys=['im_input_machine'])
 	
+		sm_recognition.userdata.im_input_machine=None
+		sm_recognition.userdata.im=None
+		sm_recognition.userdata.floor_number=None
+		
 		with sm_recognition:
-			sm_recognition.userdata.im=None
-			sm_recognition.userdata.floor_number=None
 			
 			smach.StateMachine.add('Color_Extraction', RSM.Color_Extraction(), 
 									transitions={'extracted':'Number_Extraction', 
@@ -86,7 +88,11 @@ def recognizeNumber(im):
 		sm_gpr = smach.StateMachine(outcomes=['succeed', 'fail'],
 											input_keys=['im_input'],
 											output_keys=['im_output'])
-		with sm_gpr:			
+		sm_gpr.userdata.im=None									
+		sm_gpr.userdata.im_input=None
+		sm_gpr.userdata.im_output=None
+		with sm_gpr:
+
 			smach.StateMachine.add('Color_Extraction', GPR.Color_Extraction(), 		
 									transitions={'fail':'fail', 
 												'extracted':'GPR'},
@@ -108,8 +114,8 @@ def recognizeNumber(im):
 
 
 	# Create and start the introspection server to visualize the state machine
-#	sis = smach_ros.IntrospectionServer('rnumber', sm, '/SM_ROOT')
-#	sis.start()
+	sis = smach_ros.IntrospectionServer('rnumber', sm, '/SM_ROOT')
+	sis.start()
 
 	# Execute the state machine
 	outcome = sm.execute()

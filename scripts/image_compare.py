@@ -44,7 +44,7 @@ class ImageComparator:
 		number=-1+result.index(max(result))
 		print result
 		for i in result:
-			if result[number+1]-i>0 and result[number+1]-i<5:
+			if result[number+1]-i>0 and result[number+1]-i<6:
 				raise TreatmentError('too close to other numbers, number=%d dif=%f'%(number, result[number+1]-i), 'recognition_number')
 		return number
 
@@ -79,17 +79,14 @@ def mult_image_compare(l, im):
 	average=0.;
 	for i in l:
 		try:
-			if average==0.:
-				average=image_compare(i, im)
-			else:
-				average=(average+image_compare(i, im))/2
-
+			average+=image_compare(i, im)
+			
 		except ValueError, e:
 			print 'Error in mult_image_compare: ', e
 			raise ValueError(e)
 			
 
-	return average
+	return average/len(l)
 
         
 

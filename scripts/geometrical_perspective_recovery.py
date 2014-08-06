@@ -1,15 +1,17 @@
 import smach
 import rospy
 import cv2
+import sys
 import numpy as np
 from treatment_error import TreatmentError
 from openCV_treatment import toBinary
+from track_number import average_pixel_pos
 
 #return the biggest shape of a binary image
 def cleanSmallShape(im):
 	img=im.copy()
 	contours, hierarchy = cv2.findContours(img,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
-	if len(contours)<1:
+	if len(contours)<2:
 		raise TreatmentError('No contours detected : %d contours'%(len(contours)), 'GPR')
 	for i in xrange(0,len(contours)):
 		cnt = contours[i]
@@ -24,7 +26,10 @@ def cleanSmallShape(im):
 			ind=i
 	ret,im = cv2.threshold(im,0,255,cv2.THRESH_BINARY)
 	dst=np.zeros_like(im)
-	cv2.drawContours(dst, contours, ind-1, 255, 1)
+	if ind==1:
+		cv2.drawContours(dst, contours, ind, 255, 1)
+	else:
+		cv2.drawContours(dst, contours, ind-1, 255, 1)
 	return dst
 	
 #return the orthogonal projection of A on the line defined by the point B and the unit vector v
@@ -129,6 +134,9 @@ class GPR(smach.State):
 
 		#edge recognition of the sheet
 		lines = cv2.HoughLines(sheet,1,np.pi/90,28)
+		if not isinstance(lines, np.ndarray):
+			rospy.loginfo('Sheet edges not detected, no lines detected, in GPR')
+			return 'fail'
 		if len(lines[0])<8:
 			rospy.loginfo('Sheet edges not detected, %d lines detected, in GPR'%(len(lines[0])))
 			return 'fail'
@@ -203,7 +211,6 @@ class GPR(smach.State):
 			v=[v[0]/np.linalg.norm(v), v[1]/np.linalg.norm(v)]
 			H=orthogonal_projection(A, [x1, y1] , v)
 
-			cv2.circle(sheet, (H[0], H[1]), 1, 120)
 
 			if theta > np.pi/2-alpha and theta < np.pi/2+alpha:
 				#Horizontal lines
@@ -256,37 +263,65 @@ class GPR(smach.State):
 		cv2.waitKey(-1)
 		'''
 
+		try:
+			#recovery of the perspective
+			y, x=sheet.shape
+			real_size_sheet=[21*4.5, 29.7*4.5]
 
-		#recovery of the perspective
-		y, x=sheet.shape
-		real_size_sheet=[21*4.5, 29.7*4.5]
+			n1=np.linalg.norm([ u_r_corner[0]-u_l_corner[0], u_r_corner[1]-u_l_corner[1] ])
+			k1=real_size_sheet[0]/n1
+			n2=np.linalg.norm([ l_l_corner[0]-u_l_corner[0], l_l_corner[1]-u_l_corner[1] ])
+			k2=real_size_sheet[1]/n2
+			n3=np.linalg.norm([ u_r_corner[0]-l_r_corner[0], u_r_corner[1]-l_r_corner[1] ])
+			k3=real_size_sheet[1]/n3
+			n4=np.linalg.norm([ l_l_corner[0]-l_r_corner[0], l_l_corner[1]-l_r_corner[1] ])
+			k4=real_size_sheet[0]/n4
 
-		n1=np.linalg.norm([ u_r_corner[0]-u_l_corner[0], u_r_corner[1]-u_l_corner[1] ])
-		k1=real_size_sheet[0]/n1
-		n2=np.linalg.norm([ l_l_corner[0]-u_l_corner[0], l_l_corner[1]-u_l_corner[1] ])
-		k2=real_size_sheet[1]/n2
-		n3=np.linalg.norm([ u_r_corner[0]-l_r_corner[0], u_r_corner[1]-l_r_corner[1] ])
-		k3=real_size_sheet[1]/n3
-		n4=np.linalg.norm([ l_l_corner[0]-l_r_corner[0], l_l_corner[1]-l_r_corner[1] ])
-		k4=real_size_sheet[0]/n4
+			'''
+			hsv = cv2.cvtColor(im, cv2.COLOR_BGR2HSV)
+		
+			lowredl = np.array([0, 0, 255])
+			lowredu = np.array([0, 255, 255])
 
-		x1=50
-		y1=0
-		x2=x1+int( (u_r_corner[0]-u_l_corner[0])/n1*(x/k1) )
-		y2=y1+int( (u_r_corner[1]-u_l_corner[1])/n1*(x/k1) )
-		x3=x1+int( (l_l_corner[0]-u_l_corner[0])/n2*(y/k2) )
-		y3=y1+int( (l_l_corner[1]-u_l_corner[1])/n2*(y/k2) )	
-		x4=x3+int( (l_r_corner[0]-l_l_corner[0])/n4*(x/k4) )
-		y4=y3+int( (l_r_corner[1]-l_l_corner[1])/n4*(x/k4) )	
+			upredl = np.array([150, 0, 255])
+			upredu = np.array([179, 255, 255])	
+			
+			mlow = cv2.inRange(hsv, lowredl, lowredu)
+			mup = cv2.inRange(hsv, upredl, upredu)
+			m=cv2.bitwise_or(mlow,mup)
+		
+			res=cv2.bitwise_and(im,im, mask= m)
+		
+			res=cv2.cvtColor(res, cv2.COLOR_BGR2GRAY)
+			retval, binary=cv2.threshold(res,127,255,cv2.THRESH_BINARY)
+			binary=toBinary(binary)
+		
+			red_pos=average_pixel_pos(binary)
+			print red_pos
+		
+			x1=int(red_pos[0]/2)
+			y1=int(red_pos[1]/2)
+			'''
+			x1=50
+			y1=0
+			x2=x1+int( (u_r_corner[0]-u_l_corner[0])/n1*(x/k1) )
+			y2=y1+int( (u_r_corner[1]-u_l_corner[1])/n1*(x/k1) )
+			x3=x1+int( (l_l_corner[0]-u_l_corner[0])/n2*(y/k2) )
+			y3=y1+int( (l_l_corner[1]-u_l_corner[1])/n2*(y/k2) )	
+			x4=x3+int( (l_r_corner[0]-l_l_corner[0])/n4*(x/k4) )
+			y4=y3+int( (l_r_corner[1]-l_l_corner[1])/n4*(x/k4) )	
 
-		pts1 = np.float32([[x1, y1],[x2, y2], [x3, y3],[x4, y4]])
-		pts2 = np.float32([[0,0],[x, 0],[0,y],[x, y]])
+			pts1 = np.float32([[x1, y1],[x2, y2], [x3, y3],[x4, y4]])
+			pts2 = np.float32([[0,0],[x, 0],[0,y],[x, y]])
 
-		M = cv2.getPerspectiveTransform(pts1,pts2)
-		img = cv2.warpPerspective(im,M,(x,y))
+			M = cv2.getPerspectiveTransform(pts1,pts2)
+			img = cv2.warpPerspective(im,M,(x,y))
 
-		userdata.im_output=img
-		return 'succeed'
+			userdata.im_output=img
+			return 'succeed'
+		except:
+			rospy.loginfo("Unexpected error:%s"%(sys.exc_info()[0]))
+			return 'fail'
 
 
 

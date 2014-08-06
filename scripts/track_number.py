@@ -99,7 +99,7 @@ def track_number_callback(im, arg):
 def handle_track_number(req):
 	#Treatment processing...
 	print "Tracking..."
-	l=[False]
+	l=[True]
 	pub = rospy.Publisher('/ptu/cmd', JointState, queue_size=1)
 	msg=JointState()
 	msg.name=['Pan','Tilt']

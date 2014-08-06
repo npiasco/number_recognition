@@ -19,11 +19,13 @@ def read_floor_number_client(im):
 
 if __name__ == "__main__":
 
+	rospy.init_node('client', anonymous=True)
+	
 	if len(sys.argv)<2:
 		rospy.loginfo('Camera topic needed')
 		sys.exit()
 		
-	rospy.init_node('client', anonymous=True)
+
 	print "Requesting srv"
 
 	#move the camera to focus the number

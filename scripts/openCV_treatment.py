@@ -34,7 +34,7 @@ def extraction(im):
 
 			if f_shape:
 				ligne_cpt=ligne_cpt+1
-			if ligne_cpt > 2*y:
+			if ligne_cpt > 5*y:
 				#avoid the focuse on noise
 				
 				if (box[2]-box[0])*(box[3]-box[1]) < 100:

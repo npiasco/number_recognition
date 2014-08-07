@@ -16,7 +16,7 @@ class calibration:
 
 	def __init__(self):
 		rospy.init_node('color_calibration')
-		self.image_sub = rospy.Subscriber("output_image",Image,self.callback) 
+		self.image_sub = rospy.Subscriber("/head_xtion/rgb/image_color",Image,self.callback) 
 
 		self.iLowH = 0;
 		self.iHighH = 179;

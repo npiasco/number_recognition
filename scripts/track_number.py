@@ -77,7 +77,7 @@ def track_number_callback(im, arg):
 		rospy.loginfo(e)
 		msg.position=[-0.7, 0.5]
 		pub.publish(msg)
-		rospy.sleep(5)
+		rospy.sleep(1)
 #		raise rospy.ServiceException("Tracking Failed")
 
 	else:

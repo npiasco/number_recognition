@@ -109,7 +109,7 @@ def handle_track_number(req):
 	msg=JointState()
 	msg.name=['pan','tilt']
 	msg.velocity=[0.5, 0.5]
-	msg.position=[0, 0.5]
+	msg.position=[-0.7, 0.5]
 	
 	#defaul position
 	pub.publish(msg)

@@ -114,8 +114,8 @@ def recognizeNumber(im):
 
 
 	# Create and start the introspection server to visualize the state machine
-	sis = smach_ros.IntrospectionServer('rnumber', sm, '/SM_ROOT')
-	sis.start()
+#	sis = smach_ros.IntrospectionServer('rnumber', sm, '/SM_ROOT')
+#	sis.start()
 
 	# Execute the state machine
 	outcome = sm.execute()

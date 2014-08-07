@@ -66,7 +66,7 @@ def track_number_callback(im, arg):
 		print red_pos
 		cv2.circle(binary, red_pos, 10, 125)
 		cv2.imshow('Track', binary)
-		cv2.waitKey(5) 	
+		cv2.waitKey(1) 	
 		#move the camera to focus the number
 		#...
 		
@@ -75,14 +75,17 @@ def track_number_callback(im, arg):
 		raise rospy.ServiceException("Tracking Failed")
 	except TreatmentError,  e:
 		rospy.loginfo(e)
-		raise rospy.ServiceException("Tracking Failed")
+		msg.position=[-0.7, 0.5]
+		pub.publish(msg)
+		rospy.sleep(5)
+#		raise rospy.ServiceException("Tracking Failed")
 
 	else:
 		if abs(red_pos[0]-target_pos[0])>20 or abs(red_pos[1]-target_pos[1])>20:
 				
 			if (red_pos[0]-target_pos[0])>0:
 				#move to right
-				msg.position[0]+=-0.05
+				msg.position[0]-=0.05
 			else:
 				msg.position[0]+=0.05
 
@@ -90,11 +93,11 @@ def track_number_callback(im, arg):
 				#move down
 				msg.position[1]+=0.05
 			else:
-				msg.position[1]+=-0.05
+				msg.position[1]-=0.05
 								
 			print msg.position
 			pub.publish(msg)
-			rospy.sleep(0.5)
+			rospy.sleep(1)
 			
 		else:
 			l[0]=True
@@ -106,14 +109,18 @@ def handle_track_number(req):
 	print "Tracking..."
 	l=[False]
 	pub = rospy.Publisher('/ptu/cmd', JointState, queue_size=1)
+
+	#wait for listener...
+	rospy.sleep(1)
+	
 	msg=JointState()
 	msg.name=['pan','tilt']
-	msg.velocity=[0.5, 0.5]
+	msg.velocity=[0.8, 0.8]
 	msg.position=[-0.7, 0.5]
 	
 	#defaul position
 	pub.publish(msg)
-	rospy.sleep(2)
+
 	
 	#suscribe to the topic of the camera
 	image_subscriber = rospy.Subscriber(req.cameraTopic,Image, track_number_callback, [l, pub, msg])

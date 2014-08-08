@@ -6,6 +6,7 @@ from sensor_msgs.msg import Image
 from number_recognition.srv import *
 
 def read_floor_number_client(im, arg):
+	
 	if arg[0]==1:
 		rospy.wait_for_service('read_floor_number')
 
@@ -30,7 +31,7 @@ if __name__ == "__main__":
 	
 	if len(sys.argv)<2:
 		rospy.loginfo('Camera topic needed')
-		sys.exit()
+		sys.exit(0)
 		
 
 	print "Requesting srv"
@@ -47,6 +48,8 @@ if __name__ == "__main__":
 	arg=[0]	
 	image_sub = rospy.Subscriber("head_xtion/rgb/image_color",Image,read_floor_number_client, arg)
 	while not rospy.is_shutdown():
-		raw_input('Launch recognition ?')
-		arg[0]=1
-	rospy.spin()
+		try:
+			raw_input('Launch recognition ?')
+			arg[0]=1
+		except KeyboardInterrupt:
+			sys.exit(0)

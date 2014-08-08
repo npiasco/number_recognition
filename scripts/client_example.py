@@ -47,5 +47,6 @@ if __name__ == "__main__":
 	arg=[0]	
 	image_sub = rospy.Subscriber("head_xtion/rgb/image_color",Image,read_floor_number_client, arg)
 	while not rospy.is_shutdown():
-		arg[0]=input('Launch recognition ?')
+		raw_input('Launch recognition ?')
+		arg[0]=1
 	rospy.spin()

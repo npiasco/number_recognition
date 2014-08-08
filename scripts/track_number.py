@@ -29,6 +29,7 @@ def average_pixel_pos(im):
 	x=int(x/cpt)
 	y=int(y/cpt)
 	if cpt<100 or cpt>500:
+		#number not detected
 		raise TreatmentError('red tracker fail', 'track number')
 	return (x,y)
 
@@ -36,11 +37,12 @@ def average_pixel_pos(im):
 
 
 def track_number_callback(im, arg):
-	#convert ROS image to opencv matrix
+
 	l, pub, msg = arg
 	target_pos=(400, 210)
 	try:
 		bridge = CvBridge()
+		#convert ROS image to opencv matrix
 		cv_image = bridge.imgmsg_to_cv2(im, "bgr8")
 
 		hsv = cv2.cvtColor(cv_image, cv2.COLOR_BGR2HSV)
@@ -125,8 +127,18 @@ def handle_track_number(req):
 	#suscribe to the topic of the camera
 	image_subscriber = rospy.Subscriber(req.cameraTopic,Image, track_number_callback, [l, pub, msg])
 	
+	#start a timer
+	t=rospy.get_time()
+	while t==0:
+		t=rospy.get_time()
+
+	
 	while l[0]==False:
-		pass 
+		t_c=rospy.get_time()
+		elaps=t_c-t
+		if elaps > 15:
+			raise rospy.ServiceException("Taking to mutch time for tracking. Aborted")
+			
 	image_subscriber.unregister()
 	return TrackNumberResponse()
 

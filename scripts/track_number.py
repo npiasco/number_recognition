@@ -88,15 +88,15 @@ def track_number_callback(im, arg):
 				
 			if (red_pos[0]-target_pos[0])>0:
 				#move to right
-				msg.position[0]-=0.05
+				msg.position[0]-=0.01
 			else:
-				msg.position[0]+=0.05
+				msg.position[0]+=0.01
 
 			if (red_pos[1]-target_pos[1])>0:
 				#move down
-				msg.position[1]+=0.05
+				msg.position[1]+=0.01
 			else:
-				msg.position[1]-=0.05
+				msg.position[1]-=0.01
 								
 			print msg.position
 			pub.publish(msg)

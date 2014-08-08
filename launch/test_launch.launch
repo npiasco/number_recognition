@@ -1,7 +1,7 @@
 <launch>
   <node name="client" pkg="number_recognition" type="client_example.py" args="head_xtion/rgb/image_color" output="screen">
   </node>
-  <node name="read_floor_number_server" pkg="number_recognition" type="read_floor_number.py">
+  <node name="read_floor_number_server" pkg="number_recognition" type="read_floor_number.py" output="screen">
   </node>
   <node name="track_server" pkg="number_recognition" type="track_number.py" output="screen">
   </node>

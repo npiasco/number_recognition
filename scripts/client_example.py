@@ -5,15 +5,22 @@ import rospy
 from sensor_msgs.msg import Image
 from number_recognition.srv import *
 
-def read_floor_number_client(im):
-    rospy.wait_for_service('read_floor_number')
-    try:
-        read_floor_number = rospy.ServiceProxy('read_floor_number', ReadFloorNumber)
-        resp = read_floor_number(im)
-        print "floor :  %s"%(resp.floorNumber)
+def read_floor_number_client(im, arg):
+	if arg[0]==1:
+		rospy.wait_for_service('read_floor_number')
 
-    except rospy.ServiceException, e:
-        print "Service call failed: %s"%e
+		try:
+			read_floor_number = rospy.ServiceProxy('read_floor_number', ReadFloorNumber)
+			resp = read_floor_number(im)
+			print "floor :  %s"%(resp.floorNumber)
+
+		except rospy.ServiceException, e:
+			print "Service call failed: %s"%e
+		
+		finally:
+			arg[0]=0
+	else:
+		pass
 
 
 
@@ -37,6 +44,8 @@ if __name__ == "__main__":
 	except rospy.ServiceException, e:
 		rospy.loginfo("Service call failed: %s"%e)
 		sys.exit()	
-		
-	image_sub = rospy.Subscriber("head_xtion/rgb/image_color",Image,read_floor_number_client)
+	arg=[0]	
+	image_sub = rospy.Subscriber("head_xtion/rgb/image_color",Image,read_floor_number_client, arg)
+	while not rospy.is_shutdown():
+		arg[0]=input('Launch recognition ?')
 	rospy.spin()

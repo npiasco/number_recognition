@@ -157,8 +157,6 @@ class Binary_Treatment(smach.State):
 			return 'fail'
 			
 		self.binary_step-=1
-		cv2.imshow('Binary', res)
-		cv2.waitKey(5)
 		userdata.im_output=res
 		
 		return 'succeed'

@@ -117,11 +117,17 @@ def recognizeNumber(im):
 #	sis = smach_ros.IntrospectionServer('rnumber', sm, '/SM_ROOT')
 #	sis.start()
 
+
+	# Start a timer
+	t=rospy.get_rostime()
+	while t==0:
+		t=rospy.get_rostime()
+
 	# Execute the state machine
 	outcome = sm.execute()
 
-
-
+	elaps=rospy.get_rostime()-t
+	rospy.loginfo("Treatment time :%i s %i ns"%(elaps.secs,elaps.nsecs))
 	if outcome=='aborted':
 		raise TreatmentError('State machine aborted', 'nc')
 	else:

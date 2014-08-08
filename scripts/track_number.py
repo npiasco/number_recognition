@@ -64,11 +64,12 @@ def track_number_callback(im, arg):
 		binary=toBinary(binary)
 		
 		red_pos=average_pixel_pos(binary)
-		
+		'''
 		print red_pos
 		cv2.circle(binary, red_pos, 10, 125)
 		cv2.imshow('Track', binary)
 		cv2.waitKey(1) 	
+		'''
 		#move the camera to focus the number
 		#...
 		
@@ -99,7 +100,6 @@ def track_number_callback(im, arg):
 								
 			print msg.position
 			pub.publish(msg)
-			rospy.sleep(1)
 			
 		else:
 			l[0]=True
@@ -129,17 +129,18 @@ def handle_track_number(req):
 	
 	#start a timer
 	t=rospy.get_time()
+	elaps=0
 	while t==0:
 		t=rospy.get_time()
 
 	
-	while l[0]==False:
+	while l[0]==False and elaps < 15.:
 		t_c=rospy.get_time()
 		elaps=t_c-t
-		if elaps > 15:
-			raise rospy.ServiceException("Taking to mutch time for tracking. Aborted")
 			
 	image_subscriber.unregister()
+	if elaps >15:
+		raise rospy.ServiceException("Taking to mutch time for tracking. Aborted")
 	return TrackNumberResponse()
 
 		

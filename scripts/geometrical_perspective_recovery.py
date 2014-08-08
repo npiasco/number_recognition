@@ -73,8 +73,6 @@ class Color_Extraction(smach.State):
 	def execute(self, userdata):
 	
 		im=userdata.im_input
-		cv2.imshow('Input', im)
-		cv2.waitKey(5)
 		hsv = cv2.cvtColor(im, cv2.COLOR_BGR2HSV)
 
 		if self.extraction_step==2:

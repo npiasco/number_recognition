@@ -18,8 +18,8 @@ class Color_Extraction(smach.State):
 	def execute(self, userdata):
 	
 		im=userdata.im_input
-		cv2.imshow('Input', im)
-		cv2.waitKey(5)
+#		cv2.imshow('Input', im)
+#		cv2.waitKey(5)
 		hsv = cv2.cvtColor(im, cv2.COLOR_BGR2HSV)
 		
 		lowredl = np.array([0, 0, 255])
@@ -88,8 +88,8 @@ class Number_Extraction(smach.State):
 
 		extracted=cv2.resize(extracted, (nx, ny))
 		extracted=toBinary(extracted)
-		cv2.imshow('Extracted', extracted)
-		cv2.waitKey(5)
+#		cv2.imshow('Extracted', extracted)
+#		cv2.waitKey(5)
 		userdata.im_output=extracted
 		return 'succeed'
 

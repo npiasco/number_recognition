@@ -26,7 +26,7 @@ def average_pixel_pos(im):
 			j+=1
 		i+=1
 		j=0
-	if cpt<50 or cpt>500:
+	if cpt<25 or cpt>500:
 		#number not detected
 		raise TreatmentError('red tracker fail, number of pixels founded: %d'%cpt, 'track number')
 

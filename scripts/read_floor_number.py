@@ -19,6 +19,7 @@ def handle_read_floor_number(req):
 		#try to recognize
 		try:
 			floor=recognizeNumber(cv_image)
+			print "floor: ",floor
 			return ReadFloorNumberResponse(floor)
 		except TreatmentError, e:
 			rospy.loginfo("Enable to read floor number : %s"%e)

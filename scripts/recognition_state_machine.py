@@ -18,13 +18,18 @@ class Color_Extraction(smach.State):
 	def execute(self, userdata):
 	
 		im=userdata.im_input
-		cv2.imshow('Input', im)
-		cv2.waitKey(5)
+		#Debug visualization
+		#cv2.imshow('Input', im)
+		#cv2.waitKey(5)
+
+		#working in the HSV color model to extract the red pixel
 		hsv = cv2.cvtColor(im, cv2.COLOR_BGR2HSV)
 		
+		#first threshold to red extraction
 		lowredl = np.array([0, 0, 255])
 		lowredu = np.array([0, 255, 255])
 
+		#second threshold to red extraction
 		upredl = np.array([150, 0, 255])
 		upredu = np.array([179, 255, 255])		
 		
@@ -32,7 +37,7 @@ class Color_Extraction(smach.State):
 		mup = cv2.inRange(hsv, upredl, upredu)
 
 
-		
+		#trying diffrent type of extraction, if the process failed three time, call the luminosity correction process
 		if self.extraction_step==3:
 			m=cv2.bitwise_or(mlow,mup)
 			res=cv2.bitwise_and(im,im, mask= m)
@@ -47,6 +52,7 @@ class Color_Extraction(smach.State):
 				self.extraction_step=3
 				return 'fail'
 		
+		#make the thresholded image binary
 		res=cv2.cvtColor(res, cv2.COLOR_BGR2GRAY)
 		retval, res=cv2.threshold(res,127,255,cv2.THRESH_BINARY)
 		res=toBinary(res)
@@ -66,11 +72,12 @@ class Number_Extraction(smach.State):
 	def execute(self, userdata):
 	
 		im=userdata.im_input
-
+		
+		#extracted the interessting part of the image (the one with the number)
 		box, boderless=extraction(im)
 		extracted=im[box[0]:box[2], box[1]:box[3]]
 		
-		#making an image with an area of 30000 pixels
+		#resizing the image to make an image with an area of 30000 pixels^2
 		area=30000
 		y, x=extracted.shape
 		print x*y
@@ -87,9 +94,14 @@ class Number_Extraction(smach.State):
 		nx=int(r*ny)
 
 		extracted=cv2.resize(extracted, (nx, ny))
+		
+		#binary thresholding requested after resize
 		extracted=toBinary(extracted)
-		cv2.imshow('Extracted', extracted)
-		cv2.waitKey(5)
+
+		#Debuging print
+		#cv2.imshow('Extracted', extracted)
+		#cv2.waitKey(5)
+
 		userdata.im_output=extracted
 		return 'succeed'
 
@@ -100,7 +112,8 @@ class Recognition(smach.State):
 		smach.State.__init__(self, 
 								outcomes=['succeed', 'fail'],
 								input_keys=['im_input'],
-								output_keys=['im_output', 'number'])								
+								output_keys=['im_output', 'number'])
+		#tool used to recognition
 		self.ic=ImageComparator()
 		
 	def execute(self, userdata):
@@ -129,7 +142,8 @@ class Binary_Treatment(smach.State):
 		self.im=None
 		
 	def execute(self, userdata):
-	
+		
+		#the kernel used to perform morphological transformation
 		kernel=np.array([[0, 0, 0, 1, 0, 0, 0], 
 						 [0, 0, 1, 1, 1, 0, 0], 
 						 [0, 1, 1, 1, 1, 1, 0],
@@ -138,6 +152,7 @@ class Binary_Treatment(smach.State):
 						 [0, 0, 1, 1, 1, 0, 0],
 						 [0, 0, 0, 1, 0, 0, 0]], np.uint8)
 
+               #trying diffrent type of transformation, if the process failed three time, go to step Color_Extraction to try an other extraction
 		if self.binary_step==3:
 		
 			self.im=userdata.im_input

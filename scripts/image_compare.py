@@ -16,6 +16,9 @@ class ImageComparator:
 		pathname = os.path.dirname(sys.argv[0])
 		fullpath = os.path.abspath(pathname)
 		dirs=glob.glob(fullpath+'/number_example/'+'*')
+		if len(dirs)==0:
+			raise TreatmentError('number_example folder not found, cannot proceed to recognition', 'recognition_number')
+
 		for folder in dirs:
 
 			im=cv2.imread(folder+'/-1.jpg',0)

@@ -29,23 +29,27 @@ def recognizeNumber(im):
 		
 		with sm_recognition:
 			
+			#Binarization of the image to obtein only red pixels (the number on the lift)
 			smach.StateMachine.add('Color_Extraction', RSM.Color_Extraction(), 
 									transitions={'extracted':'Number_Extraction', 
 												'fail_after_LC':'fail_after_LC', 
 												'fail':'fail'},
 									remapping={'im_input':'im_input_machine',
 												'im_output':'im'})
+			#Resize the image on the number to proceed recognition
 			smach.StateMachine.add('Number_Extraction', RSM.Number_Extraction(),
 									transitions={'succeed':'Recognition',
 												'fail':'Color_Extraction'},
 									remapping={'im_input':'im',
 												'im_output':'im'})
+			#Recognition of the number
 			smach.StateMachine.add('Recognition', RSM.Recognition(),
 									transitions={'succeed':'succeed',
 												'fail':'Binary_Treatment'},
 									remapping={'im_input':'im',
 												'im_output':'im',
 												'number':'floor_number'})													
+			#Morphological transformation on the number if the recognition failed
 			smach.StateMachine.add('Binary_Treatment', RSM.Binary_Treatment(),
 									transitions={'succeed':'Recognition',
 												'fail':'Color_Extraction'},

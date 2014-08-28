@@ -9,7 +9,7 @@ from treatment_error import TreatmentError
 class Color_Extraction(smach.State):
 	def __init__(self):
 		smach.State.__init__(self, 
-								outcomes=['extracted', 'fail', 'fail_after_gpr'],
+								outcomes=['extracted', 'fail', 'fail_after_LC'],
 								input_keys=['im_input'],
 								output_keys=['im_output'])
 		self.isGPRed=False
@@ -18,8 +18,8 @@ class Color_Extraction(smach.State):
 	def execute(self, userdata):
 	
 		im=userdata.im_input
-#		cv2.imshow('Input', im)
-#		cv2.waitKey(5)
+		cv2.imshow('Input', im)
+		cv2.waitKey(5)
 		hsv = cv2.cvtColor(im, cv2.COLOR_BGR2HSV)
 		
 		lowredl = np.array([0, 0, 255])
@@ -42,7 +42,7 @@ class Color_Extraction(smach.State):
 			res=cv2.bitwise_and(im,im, mask= mlow)
 		elif self.extraction_step==0:
 			if self.isGPRed:
-				return 'fail_after_gpr'
+				return 'fail_after_LC'
 			else:
 				self.extraction_step=3
 				return 'fail'
@@ -88,8 +88,8 @@ class Number_Extraction(smach.State):
 
 		extracted=cv2.resize(extracted, (nx, ny))
 		extracted=toBinary(extracted)
-#		cv2.imshow('Extracted', extracted)
-#		cv2.waitKey(5)
+		cv2.imshow('Extracted', extracted)
+		cv2.waitKey(5)
 		userdata.im_output=extracted
 		return 'succeed'
 

@@ -66,14 +66,6 @@ def track_number_callback(im, arg):
 		binary=toBinary(binary)
 		
 		red_pos=average_pixel_pos(binary)
-		'''
-		print red_pos
-		cv2.circle(binary, red_pos, 10, 125)
-		cv2.imshow('Track', binary)
-		cv2.waitKey(1) 	
-		'''
-		#move the camera to focus the number
-		#...
 		
 	except CvBridgeError,  e:
 		rospy.loginfo(e)
@@ -82,22 +74,23 @@ def track_number_callback(im, arg):
 		rospy.loginfo(e)
 		msg.position=[-0.7, 0.5]
 		pub.publish(msg)
-		rospy.sleep(1)
-#		raise rospy.ServiceException("Tracking Failed")
+		rospy.sleep(0.5)
 
 	else:
-		if abs(red_pos[0]-target_pos[0])>20 or abs(red_pos[1]-target_pos[1])>20:
+		#move the camera to focus the number
+		thresh=20
+		if abs(red_pos[0]-target_pos[0])>thresh or abs(red_pos[1]-target_pos[1])>thresh:
 				
-			if (red_pos[0]-target_pos[0])>0:
+			if (red_pos[0]-target_pos[0])>thresh:
 				#move to right
 				msg.position[0]-=0.01
-			else:
+			elif (red_pos[0]-target_pos[0])<thresh:
 				msg.position[0]+=0.01
 
-			if (red_pos[1]-target_pos[1])>0:
+			if (red_pos[1]-target_pos[1])>thresh:
 				#move down
 				msg.position[1]+=0.01
-			else:
+			elif (red_pos[1]-target_pos[1])<thresh:
 				msg.position[1]-=0.01
 								
 			print msg.position
@@ -120,7 +113,7 @@ def handle_track_number(req):
 	msg=JointState()
 	msg.name=['pan','tilt']
 	msg.velocity=[0.8, 0.8]
-	msg.position=[-0.7, 0.5]
+	msg.position=[-0.8, 0.5]
 	
 	#defaul position
 	pub.publish(msg)

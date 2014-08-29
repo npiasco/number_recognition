@@ -39,6 +39,8 @@ class templateRecognition:
         self.template[3] = cv2.imread(fullpath+'template2.jpg',0)
 
     def identify(self, im):
+           im=cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)
+
            val=np.zeros((6,4))
            # All the 6 methods for comparison in a list
            methods = ['cv2.TM_CCOEFF', 'cv2.TM_CCOEFF_NORMED', 'cv2.TM_CCORR',
@@ -77,10 +79,6 @@ class templateRecognition:
            else:
                raise TeatmentError('Impossible to find the right number', 'template_recognition')
 
-if __name__=='__main__':
-    img = cv2.imread('testm.jpg',0)
-    t=templateRecognition()
-    print t.identify(img)
 
         
             

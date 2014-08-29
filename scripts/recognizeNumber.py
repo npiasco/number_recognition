@@ -9,6 +9,7 @@ import smach_ros
 from treatment_error import TreatmentError
 import recognition_state_machine as RSM
 from luminosity_correction import Luminosity_Correction
+from template_recognition import Template_Recognition
 
 
 def recognizeNumber(im):
@@ -16,12 +17,13 @@ def recognizeNumber(im):
 	# Create a SMACH state machine
 	sm = smach.StateMachine(outcomes=['succeed', 'aborted'])
 	sm.userdata.first_im=im
-
+	sm.userdata.number=None
 	# Open the container
 	with sm:
 		# Create recognition state machine
 		sm_recognition = smach.StateMachine(outcomes=['succeed', 'fail', 'fail_after_LC'],
-						    input_keys=['im_input_machine'])
+						    input_keys=['im_input_machine'],
+						    output_keys=['floor_number'])
 	
 		sm_recognition.userdata.im_input_machine=None
 		sm_recognition.userdata.im=None
@@ -58,23 +60,33 @@ def recognizeNumber(im):
 		
 		smach.StateMachine.add('Recognition_Process', sm_recognition,
 				       transitions={'fail':'Luminosity_Correction',
-						    'fail_after_LC':'aborted',
+						    'fail_after_LC':'Template_Recognition',
 						    'succeed':'succeed'},
-				       remapping={'im_input_machine':'first_im'})
+				       remapping={'im_input_machine':'first_im',
+						  'floor_number':'number'})
 			
 		# Create luminosity correction state
 		smach.StateMachine.add('Luminosity_Correction', Luminosity_Correction(),
-				       transitions={'aborted':'aborted',
+				       transitions={'aborted':'Template_Recognition',
 						   'succeed':'Recognition_Process'},
 				       remapping={'im_input':'first_im',
 						  'im_output':'first_im'})
+
+	        # Create luminosity correction state
+		smach.StateMachine.add('Template_Recognition', Template_Recognition(),
+				       transitions={'fail':'aborted',
+						   'succeed':'succeed'},
+				       remapping={'im_input':'first_im',
+						  'number':'number'})
+
+		
 
 
 
 
 	# Create and start the introspection server to visualize the state machine
-	#sis = smach_ros.IntrospectionServer('rnumber', sm, '/SM_ROOT')
-	#sis.start()
+	sis = smach_ros.IntrospectionServer('rnumber', sm, '/SM_ROOT')
+	sis.start()
 
 
 	# Start a timer
@@ -90,7 +102,7 @@ def recognizeNumber(im):
 	if outcome=='aborted':
 		raise TreatmentError('State machine aborted', 'nc')
 	else:
-		return sm_recognition.userdata.floor_number
+		return sm.userdata.number
 	
 	
 	

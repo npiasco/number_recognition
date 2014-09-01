@@ -17,9 +17,12 @@ def recognizeNumber(im):
 	# Create a SMACH state machine
 	sm = smach.StateMachine(outcomes=['succeed', 'aborted'])
 	sm.userdata.first_im=im
+	sm.userdata.template_im=im.copy()
 	sm.userdata.number=None
 	# Open the container
 	with sm:
+
+
 		# Create recognition state machine
 		sm_recognition = smach.StateMachine(outcomes=['succeed', 'fail', 'fail_after_LC'],
 						    input_keys=['im_input_machine'],
@@ -72,11 +75,11 @@ def recognizeNumber(im):
 				       remapping={'im_input':'first_im',
 						  'im_output':'first_im'})
 
-	        # Create luminosity correction state
+	        # Create template matching recognition state
 		smach.StateMachine.add('Template_Recognition', Template_Recognition(),
 				       transitions={'fail':'aborted',
 						   'succeed':'succeed'},
-				       remapping={'im_input':'first_im',
+				       remapping={'im_input':'template_im',
 						  'number':'number'})
 
 		
@@ -100,7 +103,7 @@ def recognizeNumber(im):
 	elaps=rospy.get_rostime()-t
 	rospy.loginfo("Treatment time :%i s %i ns"%(elaps.secs,elaps.nsecs))
 	if outcome=='aborted':
-		raise TreatmentError('State machine aborted', 'nc')
+		raise TreatmentError('State machine cannot find the right number', 'end of state machine')
 	else:
 		return sm.userdata.number
 	

@@ -119,7 +119,6 @@ class Recognition(smach.State):
 	def execute(self, userdata):
 	
 		im=userdata.im_input
-		
 		try:
 			num=self.ic.identify(im)
 		except TreatmentError,e:
@@ -173,7 +172,6 @@ class Binary_Treatment(smach.State):
 			
 		self.binary_step-=1
 		userdata.im_output=res
-		
 		return 'succeed'
 
 

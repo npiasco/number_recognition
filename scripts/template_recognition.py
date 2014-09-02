@@ -32,7 +32,7 @@ class templateRecognition:
         #path to the directory of the num's directories
         pathname = os.path.dirname(sys.argv[0])
         fullpath = os.path.abspath(pathname)+'/templates/'
-        print fullpath
+
         self.template[0] = cv2.imread(fullpath+'template-1.jpg',0)
         self.template[1] = cv2.imread(fullpath+'template0.jpg',0)
         self.template[2] = cv2.imread(fullpath+'template1.jpg',0)

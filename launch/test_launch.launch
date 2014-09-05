@@ -3,6 +3,4 @@
   </node>
   <node name="read_floor_number_server" pkg="number_recognition" type="read_floor_number.py" output="screen">
   </node>
-  <node name="track_server" pkg="number_recognition" type="track_number.py" output="screen">
-  </node>
 </launch>

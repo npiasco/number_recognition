@@ -16,6 +16,7 @@ class track_number:
 		s = rospy.Service('track_number', TrackNumber, self.handle_track_number)
 		print "Ready to track."
 		self.status=False
+		self.timer=0.0
 		self.localization=3
 
         #return the position of the average of all pixels in im
@@ -49,7 +50,7 @@ class track_number:
 	def track_number_callback(self, im, arg):
 
 		pub, msg = arg
-		target_pos=(380, 210)
+		target_pos=(400, 210)
 		try:
 			bridge = CvBridge()
 		        #convert ROS image to opencv matrix
@@ -82,33 +83,37 @@ class track_number:
 
 		except TreatmentError,  e:
 			rospy.loginfo(e)
-			if self.localization==3:
-				msg.position=[-0.9, 0.5]
-			elif self.localization==2:
-				msg.position=[-1.2, 0.5]
-			elif self.localization==1:
-				msg.position=[-1.5, 0.5]
+			t=rospy.get_time()-self.timer
+			if t>2.0:
+				if self.localization==3:
+					msg.position=[-0.9, 0.5]
+				elif self.localization==2:
+					msg.position=[-1.2, 0.5]
+				elif self.localization==1:
+					msg.position=[-1.5, 0.5]
+				else:
+					self.localization=4
+				self.localization-=1
+				pub.publish(msg)
+				self.timer=rospy.get_time()
 			else:
-				raise rospy.ServiceException("Tracking Failed")
-			self.localization-=1
-			pub.publish(msg)
-			rospy.sleep(0.5)
+				pass
 
 		else:
 		#move the camera to focus the number
-			thresh=20
+			thresh=25
 			if abs(red_pos[0]-target_pos[0])>thresh or abs(red_pos[1]-target_pos[1])>thresh:
 				
 				if (red_pos[0]-target_pos[0])>thresh:
 				#move to right
 					msg.position[0]-=0.01
-				elif (red_pos[0]-target_pos[0])<thresh:
+				elif (red_pos[0]-target_pos[0])<-thresh:
 					msg.position[0]+=0.01
 					
 				if (red_pos[1]-target_pos[1])>thresh:
 				#move down
 					msg.position[1]+=0.01
-				elif (red_pos[1]-target_pos[1])<thresh:
+				elif (red_pos[1]-target_pos[1])<-thresh:
 					msg.position[1]-=0.01
 								
 				
@@ -122,6 +127,8 @@ class track_number:
 
 	def handle_track_number(self, req):
 		try:
+			self.status=False
+			self.localization=3
 	                #Treatment processing...
 			print "Tracking..."
 			pub = rospy.Publisher('/ptu/cmd', JointState, queue_size=1)
@@ -137,7 +144,7 @@ class track_number:
                    	#defaul position
 			pub.publish(msg)
 
-	
+			self.timer=rospy.get_time()
                      	#suscribe to the topic of the camera
 			image_subscriber = rospy.Subscriber(req.cameraTopic,Image, self.track_number_callback, [pub, msg])
 	
@@ -147,7 +154,7 @@ class track_number:
 			while t==0:
 				t=rospy.get_time()
 
-	
+			
 			while self.status==False and elaps < 15.:
 
 				t_c=rospy.get_time()
@@ -159,8 +166,7 @@ class track_number:
 		finally:
 			print 'End of tracking'
 			image_subscriber.unregister()
-			self.status=False
-			self.localization=3
+			
 
 		
 
